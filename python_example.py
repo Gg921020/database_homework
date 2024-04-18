@@ -15,10 +15,10 @@ DB_NAME = "testdb"
 @app.route('/')
 def index():
     student_form = """
-    <h2>查詢學生信息</h2>
+    <h2>必修自動加選</h2>
     <form method="post" action="/query_student" >
         輸入學號:<input name="student_id">
-        <input type="submit" value="查詢">
+        <input type="submit" value="加選">
     </form>
     """
     course_form = """
@@ -55,7 +55,7 @@ def index():
     
     return student_form + course_form + enroll_form + withdraw_form + schedule
 
-# 查詢學生信息
+# 必修自動加選
 @app.route('/query_student', methods=['POST'])
 def query_student():
     # 獲取輸入的學生ID
@@ -70,39 +70,10 @@ def query_student():
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
 
-    # 查詢學生資訊
-    query = "SELECT * FROM Student WHERE Student_ID = '{}';".format(student_id)
-    cursor = conn.cursor()
-    cursor.execute(query)
-
-    # 生成學生資訊表格
-    results = """
-    <h2>學生資訊</h2>
+    return """
+    <p>必修選課成功</p>
     <p><a href="/">返回首頁</a></p>
-    <table border="1">
-        <tr>
-            <th>學生ID</th>
-            <th>科系</th>
-            <th>年級</th>
-            <th>班級</th>
-            <th>已選學分</th>
-        </tr>
     """
-
-    student = cursor.fetchone()
-    if student:
-        results += "<tr>"
-        results += "<td>{}</td>".format(student[0])  # Student_ID
-        results += "<td>{}</td>".format(student[1])  # Department
-        results += "<td>{}</td>".format(student[2])  # Grade
-        results += "<td>{}</td>".format(student[3])  # class
-        results += "<td>{}</td>".format(student[4])  # Credit_Selected
-        results += "</tr>"
-    else:
-        results += "<tr><td colspan='5'>找不到該學生</td></tr>"
-
-    results += "</table>"
-    return results
 
 # 查詢課程信息
 @app.route('/query_course', methods=['POST'])
@@ -278,6 +249,20 @@ def enroll_course():
         <p><a href="/">返回首頁</a></p>
         """
     
+    # 檢查是否已經選擇了相同名稱的課程
+    same_name_course_query = """
+    SELECT *
+    FROM Enrollment e
+    JOIN Course c ON e.Course_ID = c.Course_ID
+    WHERE e.Student_ID = '{}' AND c.Course_Name = '{}';
+    """.format(student_id, course[1])
+    cursor.execute(same_name_course_query)
+    if cursor.fetchone():
+        return """
+        <p>已經選擇了名為{}的課程</p>
+        <p><a href="/">返回首頁</a></p>
+        """.format(course[1])
+
     # 檢查學生年級是否低於課程開設年級
     if student[2] < course[9]:
         return """
@@ -400,6 +385,19 @@ def drop_course():
         update_credit_query = "UPDATE Student SET Credit_Selected = Credit_Selected - {} WHERE Student_ID = '{}';".format(course[3], student_id)
         cursor.execute(update_credit_query)
 
+        # 檢查學生總學分是否低於最低學分限制
+        total_credit_query = "SELECT Credit_Selected FROM Student WHERE Student_ID = '{}';".format(student_id)
+        cursor.execute(total_credit_query)
+        total_credit = cursor.fetchone()[0]
+
+        if total_credit < 9:
+            # 若總學分低於最低學分限制，則取消退選並提示錯誤訊息
+            conn.rollback()
+            return """
+            <p>退選該課程後學生的總學分將低於最低學分限制（9 學分）！</p>
+            <p><a href="/">返回主頁</a></p>
+            """
+
         # 從 Enrollment 表中刪除選課紀錄
         drop_query = "DELETE FROM Enrollment WHERE Student_ID = '{}' AND Course_ID = '{}';".format(student_id, course_id)
         cursor.execute(drop_query)
@@ -439,6 +437,19 @@ def confirm_withdraw():
         update_credit_query = "UPDATE Student SET Credit_Selected = Credit_Selected - {} WHERE Student_ID = '{}';".format(credit, student_id)
         cursor.execute(update_credit_query)
 
+        # 檢查學生總學分是否低於最低學分限制
+        total_credit_query = "SELECT Credit_Selected FROM Student WHERE Student_ID = '{}';".format(student_id)
+        cursor.execute(total_credit_query)
+        total_credit = cursor.fetchone()[0]
+
+        if total_credit < 9:
+            # 若總學分低於最低學分限制，則取消退選並提示錯誤訊息
+            conn.rollback()
+            return """
+            <p>退選該課程後學生的總學分將低於最低學分限制（9 學分）！</p>
+            <p><a href="/">返回主頁</a></p>
+            """
+
         # 從 Enrollment 表中刪除選課紀錄
         drop_query = "DELETE FROM Enrollment WHERE Student_ID = '{}' AND Course_ID = '{}';".format(student_id, course_id)
         cursor.execute(drop_query)
@@ -467,12 +478,20 @@ def student_schedule():
                            user=DB_USER,
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
-    
-    
 
     cursor = conn.cursor()
 
-    
+    # 查詢學生基本信息
+    student_query = "SELECT * FROM Student WHERE Student_ID = '{}';".format(student_id)
+    cursor.execute(student_query)
+    student = cursor.fetchone()
+
+    if not student:
+        return """
+        <p>學生ID不存在，請重新輸入</p>
+        <p><a href="/">返回首頁</a></p>
+        """
+
     # 查詢學生所選的課程及相關資訊並按照上課時間排序
     schedule_query = """
     SELECT c.Course_ID, c.Course_Name, c.Department, c.Credit, c.Timebegin, c.Timeend
@@ -489,7 +508,9 @@ def student_schedule():
 
     # 根據查詢結果生成課程表
     schedule_table = "<h2>學生課程表</h2>"
-    schedule_table += "<table border='1'><tr><th>課程ID</th><th>課程名稱</th><th>科系</th><th>學分</th><th>上課時間</th></tr>"
+    schedule_table += "<table border='1'><tr><th>學生ID</th><th>科系</th><th>年級</th><th>班級</th><th>已選學分</th></tr>"
+    schedule_table += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(student[0], student[1], student[2], student[3], student[4])
+    schedule_table += "<tr><th>課程ID</th><th>課程名稱</th><th>科系</th><th>學分</th><th>上課時間</th></tr>"
     for course in schedule:
         course_id, course_name, department, credit, time_begin, time_end = course
         schedule_table += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{} - {}</td></tr>".format(course_id, course_name, department, credit, time_begin, time_end)
