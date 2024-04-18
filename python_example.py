@@ -170,7 +170,7 @@ def auto_select_required_courses(student_id):
     cursor.execute(required_course_query)
     required_courses = cursor.fetchall()
 
-    # 將必修課程自動加入學生的課程表中
+    # 將必修課程加入學生的課程表中
     for course in required_courses:
         course_id = course[0]
         enroll_query = "INSERT INTO Enrollment (Student_ID, Course_ID) VALUES ('{}', '{}');".format(student_id, course_id)
