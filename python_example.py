@@ -144,7 +144,7 @@ def query_course():
     results += "</table>"
     return results
 
-# 自動預選必修課程
+# 自動預選必修課程到學生課程表並更新已選課人數及學分數
 def auto_select_required_courses(student_id):
     conn = MySQLdb.connect(host=DB_HOST,
                            user=DB_USER,
@@ -170,9 +170,17 @@ def auto_select_required_courses(student_id):
     cursor.execute(required_course_query)
     required_courses = cursor.fetchall()
 
-    # 將必修課程加入學生的課程表中
+    # 將必修課程自動加入學生的課程表中，但需檢查學生是否已經選過這些必修課程
     for course in required_courses:
         course_id = course[0]
+        
+        # 檢查學生是否已經選過這門必修課程
+        enrollment_query = "SELECT * FROM Enrollment WHERE Student_ID = '{}' AND Course_ID = '{}';".format(student_id, course_id)
+        cursor.execute(enrollment_query)
+        if cursor.fetchone():
+            continue  # 若已經選過，則跳過不再重複加選
+
+        # 若未選過，則加選該必修課程
         enroll_query = "INSERT INTO Enrollment (Student_ID, Course_ID) VALUES ('{}', '{}');".format(student_id, course_id)
         cursor.execute(enroll_query)
 
@@ -206,7 +214,7 @@ def enroll_course():
     
     # 自動預選必修課程
     auto_select_required_courses(student_id)
-
+    
     student_query = "SELECT * FROM Student WHERE Student_ID = '{}';".format(student_id)
     course_query = "SELECT * FROM Course WHERE Course_ID = '{}';".format(course_id)
 
