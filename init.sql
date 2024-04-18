@@ -9,6 +9,8 @@ CREATE TABLE Student (
 insert into Student(Student_ID,Department,Grade,Class,Credit_Selected) values("D1149887","IECS",2,2,20);
 insert into Student(Student_ID,Department,Grade,Class,Credit_Selected) values("D1149828","IECS",2,1,17);
 insert into Student(Student_ID,Department,Grade,Class,Credit_Selected) values("D1149852","IECS",2,1,11);
+insert into Student(Student_ID,Department,Grade,Class,Credit_Selected) values("D1149788","IECS",1,2,13);
+
 
 
 
