@@ -144,7 +144,7 @@ def query_course():
     results += "</table>"
     return results
 
-# 自動預選必修課程到學生課程表並更新已選課人數及學分數
+# 自動預選符合學生年級的必修課程到學生課程表並更新已選課人數及學分數
 def auto_select_required_courses(student_id):
     conn = MySQLdb.connect(host=DB_HOST,
                            user=DB_USER,
@@ -164,7 +164,7 @@ def auto_select_required_courses(student_id):
     # 查詢該系所、年級的必修課程
     required_course_query = """
     SELECT Course_ID FROM Course
-    WHERE Department = '{}' AND Mandatory = TRUE AND Grade <= {};
+    WHERE Department = '{}' AND Mandatory = TRUE AND Grade = {};
     """.format(department, grade)
 
     cursor.execute(required_course_query)
@@ -199,7 +199,6 @@ def auto_select_required_courses(student_id):
 
     conn.commit()
     conn.close()
-
 
 # 學生選課
 @app.route('/enroll_course', methods=['POST'])
