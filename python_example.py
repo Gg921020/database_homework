@@ -211,8 +211,6 @@ def enroll_course():
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
     
-    # 自動預選必修課程
-    auto_select_required_courses(student_id)
     
     student_query = "SELECT * FROM Student WHERE Student_ID = '{}';".format(student_id)
     course_query = "SELECT * FROM Course WHERE Course_ID = '{}';".format(course_id)
@@ -456,6 +454,9 @@ def student_schedule():
                            user=DB_USER,
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
+    
+    # 自動預選必修課程
+    auto_select_required_courses(student_id)
 
     cursor = conn.cursor()
 
