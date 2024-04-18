@@ -17,7 +17,7 @@ def index():
     student_form = """
     <h2>查詢學生信息</h2>
     <form method="post" action="/query_student" >
-        輸入系所名稱:<input name="department">
+        輸入學號:<input name="student_id">
         <input type="submit" value="查詢">
     </form>
     """
@@ -58,20 +58,26 @@ def index():
 # 查詢學生信息
 @app.route('/query_student', methods=['POST'])
 def query_student():
-    department = request.form.get("department")
+    # 獲取輸入的學生ID
+    student_id = request.form.get("student_id")
 
+    # 自動選課，預選必修課程
+    auto_select_required_courses(student_id)
+
+    # 建立資料庫連線
     conn = MySQLdb.connect(host=DB_HOST,
                            user=DB_USER,
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
 
-    query = "SELECT * FROM Student WHERE Department = '{}';".format(department)
-
+    # 查詢學生資訊
+    query = "SELECT * FROM Student WHERE Student_ID = '{}';".format(student_id)
     cursor = conn.cursor()
     cursor.execute(query)
 
+    # 生成學生資訊表格
     results = """
-    <h2>學生信息查詢結果</h2>
+    <h2>學生資訊</h2>
     <p><a href="/">返回首頁</a></p>
     <table border="1">
         <tr>
@@ -83,14 +89,17 @@ def query_student():
         </tr>
     """
 
-    for row in cursor.fetchall():
+    student = cursor.fetchone()
+    if student:
         results += "<tr>"
-        results += "<td>{}</td>".format(row[0])  # Student_ID
-        results += "<td>{}</td>".format(row[1])  # Department
-        results += "<td>{}</td>".format(row[2])  # Grade
-        results += "<td>{}</td>".format(row[3])  # class
-        results += "<td>{}</td>".format(row[4])  # Credit_Selected
+        results += "<td>{}</td>".format(student[0])  # Student_ID
+        results += "<td>{}</td>".format(student[1])  # Department
+        results += "<td>{}</td>".format(student[2])  # Grade
+        results += "<td>{}</td>".format(student[3])  # class
+        results += "<td>{}</td>".format(student[4])  # Credit_Selected
         results += "</tr>"
+    else:
+        results += "<tr><td colspan='5'>找不到該學生</td></tr>"
 
     results += "</table>"
     return results
