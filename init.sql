@@ -31,7 +31,7 @@ CREATE TABLE Course (
 insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1223,"System Programing","IECS",3,"3-4","3-6",10,0,TRUE,2);
 insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1222,"OOP","IECS",3,"1-1","1-3",10,10,FALSE,2);
 insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1250,"Program Design","IECS",3,"4-5","4-7",15,14,TRUE,2);
-insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1250,"Digital Design","EE",3,"4-1","4-3",15,10,TRUE,1);
+insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1344,"Digital Design","EE",3,"4-1","4-3",15,10,TRUE,1);
 
 CREATE TABLE Schedule (
     Student_ID INT,
