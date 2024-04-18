@@ -170,14 +170,18 @@ def auto_select_required_courses(student_id):
     cursor.execute(required_course_query)
     required_courses = cursor.fetchall()
 
+    # 檢查學生已經選過的課程
+    selected_course_query = "SELECT Course_ID FROM Enrollment WHERE Student_ID = '{}';".format(student_id)
+    cursor.execute(selected_course_query)
+    selected_courses = cursor.fetchall()
+    selected_course_ids = [course[0] for course in selected_courses]
+
     # 將必修課程自動加入學生的課程表中，但需檢查學生是否已經選過這些必修課程
     for course in required_courses:
         course_id = course[0]
         
         # 檢查學生是否已經選過這門必修課程
-        enrollment_query = "SELECT * FROM Enrollment WHERE Student_ID = '{}' AND Course_ID = '{}';".format(student_id, course_id)
-        cursor.execute(enrollment_query)
-        if cursor.fetchone():
+        if course_id in selected_course_ids:
             continue  # 若已經選過，則跳過不再重複加選
 
         # 若未選過，則加選該必修課程
