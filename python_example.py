@@ -468,8 +468,7 @@ def student_schedule():
                            passwd=DB_PASSWORD,
                            db=DB_NAME)
     
-    # 自動預選必修課程
-    auto_select_required_courses(student_id)
+    
 
     cursor = conn.cursor()
 
