@@ -40,7 +40,7 @@ insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max
 
 
 CREATE TABLE Enrollment (
-    Enrollment_ID INT AUTO_INCREMENT PRIMARY KEY,
+    --Enrollment_ID INT AUTO_INCREMENT PRIMARY KEY,
     Student_ID VARCHAR(255),
     Course_ID INT,
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
