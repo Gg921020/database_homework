@@ -36,13 +36,7 @@ insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max
 insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1344,"Digital Design","EE",3,"4-1","4-3",15,10,TRUE,1);
 insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max_Capacity,Enrolled_Students,Mandatory,Grade) values(1355,"Digital design lab","EE",3,"1-1","1-3",20,10,TRUE,1)
 
-CREATE TABLE Schedule (
-    Student_ID INT,
-    Course_ID INT,
-    Start_Time TIME,
-    End_Time TIME,
-    FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
-);
+
 
 
 CREATE TABLE Enrollment (
