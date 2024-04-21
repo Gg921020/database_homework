@@ -39,7 +39,6 @@ insert into Course(Course_ID,Course_Name,Department,Credit,Timebegin,Timeend,Max
 CREATE TABLE Schedule (
     Student_ID INT,
     Course_ID INT,
-    Day VARCHAR(10),
     Start_Time TIME,
     End_Time TIME,
     FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
